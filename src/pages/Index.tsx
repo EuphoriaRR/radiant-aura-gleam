@@ -10,7 +10,7 @@ import Chatbot from '@/components/Chatbot';
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen max-w-[1440px] mx-auto">
       <Header />
       <HeroSection />
       <Features />

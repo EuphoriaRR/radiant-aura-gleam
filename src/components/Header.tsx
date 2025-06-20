@@ -16,45 +16,45 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">A</span>
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg sm:text-xl">A</span>
             </div>
-            <span className="text-2xl font-montserrat font-bold text-gray-800">Athel AI</span>
+            <span className="text-xl sm:text-2xl font-montserrat font-bold text-gray-800">Athel AI</span>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-6 lg:space-x-8">
             <button 
               onClick={() => scrollToSection('features')}
-              className="text-gray-700 hover:text-primary transition-colors font-lato font-medium"
+              className="text-gray-700 hover:text-primary transition-colors font-lato font-medium text-sm lg:text-base"
             >
               Layanan
             </button>
             <button 
               onClick={() => scrollToSection('case-studies')}
-              className="text-gray-700 hover:text-primary transition-colors font-lato font-medium"
+              className="text-gray-700 hover:text-primary transition-colors font-lato font-medium text-sm lg:text-base"
             >
               Studi Kasus
             </button>
             <button 
               onClick={() => scrollToSection('pricing')}
-              className="text-gray-700 hover:text-primary transition-colors font-lato font-medium"
+              className="text-gray-700 hover:text-primary transition-colors font-lato font-medium text-sm lg:text-base"
             >
               Harga
             </button>
             <button 
               onClick={() => scrollToSection('contact')}
-              className="text-gray-700 hover:text-primary transition-colors font-lato font-medium"
+              className="text-gray-700 hover:text-primary transition-colors font-lato font-medium text-sm lg:text-base"
             >
               Kontak Kami
             </button>
             <Button 
               onClick={() => scrollToSection('pricing')}
-              className="bg-primary hover:bg-primary/90 font-lato font-semibold px-6"
+              className="bg-primary hover:bg-primary/90 font-lato font-semibold px-4 lg:px-6 text-sm lg:text-base"
             >
               Dapatkan Audit Gratis
             </Button>
@@ -65,7 +65,7 @@ const Header = () => {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden p-2"
           >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
 
@@ -75,31 +75,31 @@ const Header = () => {
             <nav className="flex flex-col space-y-4">
               <button 
                 onClick={() => scrollToSection('features')}
-                className="text-gray-700 hover:text-primary transition-colors font-lato font-medium text-left"
+                className="text-gray-700 hover:text-primary transition-colors font-lato font-medium text-left text-sm"
               >
                 Layanan
               </button>
               <button 
                 onClick={() => scrollToSection('case-studies')}
-                className="text-gray-700 hover:text-primary transition-colors font-lato font-medium text-left"
+                className="text-gray-700 hover:text-primary transition-colors font-lato font-medium text-left text-sm"
               >
                 Studi Kasus
               </button>
               <button 
                 onClick={() => scrollToSection('pricing')}
-                className="text-gray-700 hover:text-primary transition-colors font-lato font-medium text-left"
+                className="text-gray-700 hover:text-primary transition-colors font-lato font-medium text-left text-sm"
               >
                 Harga
               </button>
               <button 
                 onClick={() => scrollToSection('contact')}
-                className="text-gray-700 hover:text-primary transition-colors font-lato font-medium text-left"
+                className="text-gray-700 hover:text-primary transition-colors font-lato font-medium text-left text-sm"
               >
                 Kontak Kami
               </button>
               <Button 
                 onClick={() => scrollToSection('pricing')}
-                className="bg-primary hover:bg-primary/90 font-lato font-semibold w-fit"
+                className="bg-primary hover:bg-primary/90 font-lato font-semibold w-fit text-sm"
               >
                 Dapatkan Audit Gratis
               </Button>

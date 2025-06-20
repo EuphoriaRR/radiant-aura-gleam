@@ -52,36 +52,36 @@ const Chatbot = () => {
   return (
     <>
       {/* Chatbot Button */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-4 right-4 z-50">
         <Button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-16 h-16 rounded-full bg-primary hover:bg-primary/90 shadow-2xl"
+          className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary hover:bg-primary/90 shadow-2xl"
           size="icon"
         >
-          {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
+          {isOpen ? <X size={20} /> : <MessageCircle size={20} />}
         </Button>
       </div>
 
       {/* Chatbot Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-80 md:w-96">
+        <div className="fixed bottom-16 sm:bottom-24 right-2 sm:right-6 z-50 w-[calc(100vw-16px)] max-w-sm sm:w-80 md:w-96">
           <Card className="shadow-2xl border-2 border-primary/20">
             <CardHeader className="bg-gradient-to-r from-primary to-accent text-white rounded-t-lg">
-              <CardTitle className="font-montserrat font-bold text-lg flex items-center space-x-2">
-                <MessageCircle size={20} />
+              <CardTitle className="font-montserrat font-bold text-base sm:text-lg flex items-center space-x-2">
+                <MessageCircle size={18} />
                 <span>Athel AI Assistant</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               {/* Messages */}
-              <div className="h-80 overflow-y-auto p-4 space-y-4 bg-gray-50">
+              <div className="h-64 sm:h-80 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
                 {messages.map((message, index) => (
                   <div
                     key={index}
                     className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-xs p-3 rounded-lg font-lato ${
+                      className={`max-w-[85%] p-2 sm:p-3 rounded-lg font-lato text-sm ${
                         message.type === 'user'
                           ? 'bg-primary text-white'
                           : 'bg-white text-gray-800 border shadow-sm'
@@ -94,21 +94,21 @@ const Chatbot = () => {
               </div>
 
               {/* Input */}
-              <div className="p-4 border-t bg-white">
+              <div className="p-3 sm:p-4 border-t bg-white">
                 <div className="flex space-x-2">
                   <Input
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     placeholder="Ketik pesan Anda..."
-                    className="font-lato"
+                    className="font-lato text-sm"
                   />
                   <Button
                     onClick={handleSendMessage}
                     size="icon"
-                    className="bg-primary hover:bg-primary/90"
+                    className="bg-primary hover:bg-primary/90 flex-shrink-0"
                   >
-                    <Send size={16} />
+                    <Send size={14} />
                   </Button>
                 </div>
               </div>
