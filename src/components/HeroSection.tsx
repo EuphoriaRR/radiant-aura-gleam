@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 
 const HeroSection = () => {
@@ -10,17 +9,17 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="bg-gradient-to-br from-white via-muted/30 to-primary/5 py-12 sm:py-16 lg:py-32">
+    <section className="bg-gradient-to-br from-white via-muted/30 to-primary/5 py-6 sm:py-8 lg:py-16">
       <div className="container mx-auto px-3 sm:px-4">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Text Content */}
           <div className="text-center lg:text-left animate-fade-in">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-montserrat font-bold text-gray-800 leading-tight mb-4 sm:mb-6">
-              Buka Potensi Penuh <span className="text-primary">Instagram Anda!</span>
+              Buat <span className="text-primary">Instagram</span> bekerja untukmu, bukan sebaliknya! 
             </h1>
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-lato text-gray-600 mb-6 sm:mb-8 leading-relaxed">
               Dapatkan analisis dan strategi mendalam untuk melesatkan pertumbuhan akun Anda. 
-              <span className="text-secondary font-semibold"> Coba audit pertama Anda, 100% Gratis!</span>
+              <span className="text-secondary font-semibold"> </span>
             </p>
             <div className="flex flex-col gap-3 sm:gap-4 justify-center lg:justify-start">
               <Button 
