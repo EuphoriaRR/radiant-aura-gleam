@@ -17,10 +17,10 @@ const Footer = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xl">A</span>
               </div>
-              <span className="text-2xl font-montserrat font-bold">Athel AI</span>
+              <span className="text-2xl font-montserrat font-bold">Node Satu</span>
             </div>
             <p className="font-lato text-gray-300">
-              © 2025 Athel AI. All Rights Reserved.
+              © 2025 Node Satu. All Rights Reserved.
             </p>
           </div>
 

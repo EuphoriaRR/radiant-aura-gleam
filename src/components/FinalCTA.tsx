@@ -22,7 +22,7 @@ const FinalCTA = () => {
             Siap Meningkatkan Permainan Instagram Anda?
           </h2>
           <p className="text-xl md:text-2xl font-lato text-white/90 mb-12 leading-relaxed">
-            Hubungi kami melalui kanal favorit Anda dan mari kita diskusikan bagaimana Athel AI bisa membantu.
+            Hubungi kami melalui kanal favorit Anda dan mari kita diskusikan bagaimana Node Satu bisa membantu.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
