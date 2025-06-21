@@ -8,11 +8,14 @@ const CaseStudies = () => {
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [activeCardIndex, setActiveCardIndex] = useState(0);
-  const scrollContainerRef = useRef(null);
-  const autoScrollTimeoutRef = useRef(null);
-  const userInteractionTimeoutRef = useRef(null);
+  
+  // Refs for managing scroll behavior and timeouts
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const autoScrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const userInteractionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isUserScrollingRef = useRef(false);
-  const scrollTimeoutRef = useRef(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   const casesPerPage = 3;
 
   const cases = [
@@ -111,7 +114,7 @@ const CaseStudies = () => {
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
-  // Cleanup timeouts
+  // Cleanup all timeouts on unmount
   useEffect(() => {
     return () => {
       if (autoScrollTimeoutRef.current) {
@@ -126,29 +129,34 @@ const CaseStudies = () => {
     };
   }, []);
 
-  // Hitung total halaman
+  // Calculate total pages for desktop pagination
   const totalPages = Math.ceil(cases.length / casesPerPage);
 
-  // Function untuk mendapatkan cases berdasarkan page number
-  const getCasesForPage = (pageNumber) => {
+  // Get cases for current page (desktop only)
+  const getCasesForPage = (pageNumber: number) => {
     const indexOfLastCase = pageNumber * casesPerPage;
     const indexOfFirstCase = indexOfLastCase - casesPerPage;
     return cases.slice(indexOfFirstCase, indexOfLastCase);
   };
 
-  // Dapatkan case untuk halaman saat ini
+  // Current cases to display
   const currentCases = isMobile ? cases : getCasesForPage(currentPage);
 
-  // FIXED: Improved scroll to card function
-  const scrollToCard = (index) => {
-    if (scrollContainerRef.current && isMobile) {
-      const container = scrollContainerRef.current;
-      const cards = container.children;
-      
-      if (cards[index]) {
+  // IMPROVED: Perfect scroll to card function with better positioning
+  const scrollToCard = (index: number) => {
+    if (!scrollContainerRef.current || !isMobile || index < 0 || index >= cases.length) return;
+    
+    // Temporarily disable user scrolling detection
+    isUserScrollingRef.current = true;
+    
+    const container = scrollContainerRef.current;
+    const cards = Array.from(container.children) as HTMLElement[];
+    
+    if (cards[index]) {
+      // Use requestAnimationFrame to ensure DOM is ready
+      requestAnimationFrame(() => {
         const containerWidth = container.offsetWidth;
         const cardWidth = cards[index].offsetWidth;
-        const gap = 16; // gap between cards
         
         // Calculate scroll position to center the card
         const cardOffsetLeft = cards[index].offsetLeft;
@@ -158,20 +166,34 @@ const CaseStudies = () => {
         const maxScroll = container.scrollWidth - containerWidth;
         const finalScrollPosition = Math.max(0, Math.min(scrollPosition, maxScroll));
         
-        // Smooth scroll to position
-        container.scrollTo({
-          left: finalScrollPosition,
-          behavior: 'smooth'
-        });
-      }
-      
-      setActiveCardIndex(index);
+        // Set active card immediately
+        setActiveCardIndex(index);
+        
+        // Use smooth scroll with fallback
+        try {
+          container.scrollTo({
+            left: finalScrollPosition,
+            behavior: 'smooth'
+          });
+        } catch (error) {
+          // Fallback for browsers that don't support smooth scroll
+          container.scrollLeft = finalScrollPosition;
+        }
+        
+        // Re-enable scroll detection after animation
+        setTimeout(() => {
+          isUserScrollingRef.current = false;
+        }, 800);
+      });
     }
   };
 
-  // FIXED: Improved mobile scroll detection with debouncing
+  // IMPROVED: Mobile scroll detection with better debouncing
   const handleMobileScroll = () => {
-    if (!isMobile || !scrollContainerRef.current || isUserScrollingRef.current) return;
+    if (!isMobile || !scrollContainerRef.current) return;
+    
+    // Don't interfere if user is actively scrolling or programmatic scroll is happening
+    if (isUserScrollingRef.current) return;
     
     // Clear previous timeout
     if (scrollTimeoutRef.current) {
@@ -183,7 +205,7 @@ const CaseStudies = () => {
       const container = scrollContainerRef.current;
       if (!container) return;
       
-      const cards = container.children;
+      const cards = Array.from(container.children) as HTMLElement[];
       const containerRect = container.getBoundingClientRect();
       const containerCenter = containerRect.left + containerRect.width / 2;
       
@@ -202,14 +224,14 @@ const CaseStudies = () => {
         }
       }
       
-      // Update active card index if different
-      if (closestIndex !== activeCardIndex) {
+      // Update active card index if different and not currently auto-scrolling
+      if (closestIndex !== activeCardIndex && !isUserScrollingRef.current) {
         setActiveCardIndex(closestIndex);
       }
-    }, 100);
+    }, 150);
   };
 
-  // FIXED: Handle user scroll start
+  // Handle user scroll start
   const handleScrollStart = () => {
     isUserScrollingRef.current = true;
     setIsAutoPlay(false);
@@ -220,7 +242,7 @@ const CaseStudies = () => {
     }
   };
 
-  // FIXED: Handle scroll end with proper detection
+  // Handle scroll end with proper detection
   const handleScrollEnd = () => {
     // Clear existing timeout
     if (userInteractionTimeoutRef.current) {
@@ -239,8 +261,8 @@ const CaseStudies = () => {
     }, 150);
   };
 
-  // Enhanced page transition function
-  const transitionToPage = (pageNumber) => {
+  // Enhanced page transition function for desktop
+  const transitionToPage = (pageNumber: number) => {
     if (isTransitioning || pageNumber === currentPage) return;
     
     setIsTransitioning(true);
@@ -254,7 +276,7 @@ const CaseStudies = () => {
   };
 
   // Navigation functions
-  const goToPage = (pageNumber) => {
+  const goToPage = (pageNumber: number) => {
     transitionToPage(pageNumber);
   };
 
@@ -278,9 +300,9 @@ const CaseStudies = () => {
     }
   };
 
-  // FIXED: Auto-scroll functionality with proper mobile handling
+  // IMPROVED: Auto-scroll functionality with better mobile handling
   useEffect(() => {
-    if (!isAutoPlay || isTransitioning || isUserScrollingRef.current) return;
+    if (!isAutoPlay || isTransitioning) return;
 
     // Clear existing timeout
     if (autoScrollTimeoutRef.current) {
@@ -288,12 +310,15 @@ const CaseStudies = () => {
     }
 
     autoScrollTimeoutRef.current = setTimeout(() => {
-      // Double check user isn't scrolling
+      // Skip if user is currently interacting
       if (isUserScrollingRef.current) return;
       
       if (isMobile) {
         const nextIndex = activeCardIndex < cases.length - 1 ? activeCardIndex + 1 : 0;
-        scrollToCard(nextIndex);
+        // Ensure smooth transition to next card
+        requestAnimationFrame(() => {
+          scrollToCard(nextIndex);
+        });
       } else {
         const nextPageNum = currentPage < totalPages ? currentPage + 1 : 1;
         transitionToPage(nextPageNum);
@@ -307,8 +332,8 @@ const CaseStudies = () => {
     };
   }, [isAutoPlay, activeCardIndex, currentPage, totalPages, isMobile, cases.length, isTransitioning]);
 
-  // Handle manual navigation
-  const handleManualNavigation = (callback) => {
+  // Handle manual navigation with proper auto-scroll management
+  const handleManualNavigation = (callback: () => void) => {
     setIsAutoPlay(false);
     isUserScrollingRef.current = true;
     
@@ -329,6 +354,7 @@ const CaseStudies = () => {
     }, 4000);
   };
 
+  // Toggle auto-play functionality
   const toggleAutoPlay = () => {
     setIsAutoPlay(!isAutoPlay);
     
@@ -337,18 +363,28 @@ const CaseStudies = () => {
     }
   };
 
-  // Reset active card index when switching to mobile
+  // Reset and initialize mobile scroll position
   useEffect(() => {
     if (isMobile) {
       setActiveCardIndex(0);
-      // Scroll to first card immediately
-      setTimeout(() => {
-        scrollToCard(0);
-      }, 100);
+      // Scroll to first card immediately with proper initialization
+      const timer = setTimeout(() => {
+        if (scrollContainerRef.current) {
+          // Force scroll to beginning first
+          scrollContainerRef.current.scrollLeft = 0;
+          // Then scroll to first card with proper positioning
+          setTimeout(() => {
+            scrollToCard(0);
+          }, 100);
+        }
+      }, 200);
+      
+      return () => clearTimeout(timer);
     }
   }, [isMobile]);
 
-  const CaseCard = ({ caseStudy, index }) => (
+  // Case Study Card Component
+  const CaseCard = ({ caseStudy, index }: { caseStudy: typeof cases[0], index: number }) => (
     <Card className={`bg-white hover:shadow-xl transition-all duration-300 ease-out border-0 shadow-lg ${
       isMobile 
         ? 'flex-shrink-0 w-[280px] sm:w-[320px] snap-center transform' 
@@ -403,7 +439,7 @@ const CaseStudies = () => {
           </p>
         </div>
 
-        {/* Mobile: Horizontal Scroll */}
+        {/* Mobile: Horizontal Scroll with Perfect Positioning */}
         {isMobile ? (
           <div className="relative">
             <div 
@@ -419,7 +455,10 @@ const CaseStudies = () => {
                 WebkitOverflowScrolling: 'touch',
                 scrollBehavior: 'smooth',
                 scrollPaddingLeft: '1rem',
-                scrollPaddingRight: '1rem'
+                scrollPaddingRight: '1rem',
+                overscrollBehaviorX: 'contain',
+                transform: 'translateZ(0)', // Force hardware acceleration
+                willChange: 'scroll-position'
               }}
             >
               {cases.map((caseStudy, index) => (
@@ -434,7 +473,7 @@ const CaseStudies = () => {
               ))}
             </div>
             
-            {/* Mobile Navigation */}
+            {/* Mobile Navigation Controls */}
             <div className="flex flex-col items-center space-y-4 mt-8">
               {/* Play/Pause and Navigation Buttons */}
               <div className="flex justify-center items-center space-x-3">
@@ -491,7 +530,7 @@ const CaseStudies = () => {
             </div>
           </div>
         ) : (
-          /* Desktop: Grid + Smooth Transitions */
+          /* Desktop: Grid Layout with Smooth Transitions */
           <>
             <div className={`grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 transition-all duration-300 ease-in-out ${
               isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
@@ -571,7 +610,7 @@ const CaseStudies = () => {
           </>
         )}
 
-        {/* Page Info */}
+        {/* Status Information */}
         <div className="text-center mt-6">
           <p className="text-sm text-gray-600">
             {isMobile ? (
