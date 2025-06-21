@@ -146,45 +146,72 @@ const CaseStudies = () => {
   const scrollToCard = (index: number) => {
     if (!scrollContainerRef.current || !isMobile || index < 0 || index >= cases.length) return;
     
+    console.log('Scrolling to card:', index); // Debug log
+    
     // Temporarily disable user scrolling detection
     isUserScrollingRef.current = true;
     
     const container = scrollContainerRef.current;
     const cards = Array.from(container.children) as HTMLElement[];
     
+    console.log('Container:', container, 'Cards:', cards.length); // Debug log
+    
     if (cards[index]) {
-      // Use requestAnimationFrame to ensure DOM is ready
-      requestAnimationFrame(() => {
-        const containerWidth = container.offsetWidth;
-        const cardWidth = cards[index].offsetWidth;
+      // Set active card immediately
+      setActiveCardIndex(index);
+      
+      // Use multiple methods to ensure scrolling works
+      const cardElement = cards[index];
+      const containerWidth = container.offsetWidth;
+      const cardWidth = cardElement.offsetWidth;
+      const gap = 16; // gap-4 = 16px
+      
+      // Method 1: Calculate precise scroll position
+      const cardOffsetLeft = cardElement.offsetLeft;
+      const scrollPosition = cardOffsetLeft - (containerWidth / 2) + (cardWidth / 2);
+      const maxScroll = container.scrollWidth - containerWidth;
+      const finalScrollPosition = Math.max(0, Math.min(scrollPosition, maxScroll));
+      
+      console.log('Scroll calculation:', { cardOffsetLeft, scrollPosition, finalScrollPosition }); // Debug log
+      
+      // Method 2: Use scrollIntoView as primary method
+      try {
+        cardElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+        console.log('Used scrollIntoView'); // Debug log
+      } catch (error) {
+        console.log('scrollIntoView failed, using fallback'); // Debug log
         
-        // Calculate scroll position to center the card
-        const cardOffsetLeft = cards[index].offsetLeft;
-        const scrollPosition = cardOffsetLeft - (containerWidth / 2) + (cardWidth / 2);
+        // Method 3: Manual scrollTo with animation
+        const startScroll = container.scrollLeft;
+        const distance = finalScrollPosition - startScroll;
+        const duration = 300;
+        let start = 0;
         
-        // Ensure we don't scroll past boundaries
-        const maxScroll = container.scrollWidth - containerWidth;
-        const finalScrollPosition = Math.max(0, Math.min(scrollPosition, maxScroll));
+        const animateScroll = (timestamp: number) => {
+          if (!start) start = timestamp;
+          const progress = Math.min((timestamp - start) / duration, 1);
+          
+          // Easing function
+          const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+          
+          container.scrollLeft = startScroll + (distance * easeOutCubic);
+          
+          if (progress < 1) {
+            requestAnimationFrame(animateScroll);
+          }
+        };
         
-        // Set active card immediately
-        setActiveCardIndex(index);
-        
-        // Use smooth scroll with fallback
-        try {
-          container.scrollTo({
-            left: finalScrollPosition,
-            behavior: 'smooth'
-          });
-        } catch (error) {
-          // Fallback for browsers that don't support smooth scroll
-          container.scrollLeft = finalScrollPosition;
-        }
-        
-        // Re-enable scroll detection after animation
-        setTimeout(() => {
-          isUserScrollingRef.current = false;
-        }, 800);
-      });
+        requestAnimationFrame(animateScroll);
+      }
+      
+      // Re-enable scroll detection after animation
+      setTimeout(() => {
+        isUserScrollingRef.current = false;
+      }, 600);
     }
   };
 
@@ -365,19 +392,20 @@ const CaseStudies = () => {
 
   // Reset and initialize mobile scroll position
   useEffect(() => {
-    if (isMobile) {
+    if (isMobile && scrollContainerRef.current) {
       setActiveCardIndex(0);
-      // Scroll to first card immediately with proper initialization
+      
+      // Debug log
+      console.log('Mobile mode initialized, scrolling to first card');
+      
+      // Force immediate scroll to beginning
+      scrollContainerRef.current.scrollLeft = 0;
+      
+      // Small delay to ensure DOM is ready, then scroll to first card
       const timer = setTimeout(() => {
-        if (scrollContainerRef.current) {
-          // Force scroll to beginning first
-          scrollContainerRef.current.scrollLeft = 0;
-          // Then scroll to first card with proper positioning
-          setTimeout(() => {
-            scrollToCard(0);
-          }, 100);
-        }
-      }, 200);
+        console.log('Executing delayed scroll to card 0');
+        scrollToCard(0);
+      }, 100);
       
       return () => clearTimeout(timer);
     }
@@ -387,9 +415,10 @@ const CaseStudies = () => {
   const CaseCard = ({ caseStudy, index }: { caseStudy: typeof cases[0], index: number }) => (
     <Card className={`bg-white hover:shadow-xl transition-all duration-300 ease-out border-0 shadow-lg ${
       isMobile 
-        ? 'flex-shrink-0 w-[280px] sm:w-[320px] snap-center transform' 
+        ? 'flex-shrink-0 w-[280px] sm:w-[320px] transform' 
         : 'transform hover:scale-105'
-    } ${isMobile && index === activeCardIndex ? 'scale-105 ring-4 ring-blue-200' : ''}`}>
+    } ${isMobile && index === activeCardIndex ? 'scale-105 ring-4 ring-blue-200' : ''}`}
+    style={isMobile ? { scrollSnapAlign: 'center' } : {}}>
       <CardHeader className="text-center pb-4">
         <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center transform transition-transform duration-300 hover:rotate-12">
           <span className="text-white font-bold text-xl">{caseStudy.clientName.charAt(0)}</span>
@@ -448,15 +477,13 @@ const CaseStudies = () => {
               onTouchStart={handleScrollStart}
               onTouchEnd={handleScrollEnd}
               onTouchMove={handleScrollStart}
-              className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide scroll-smooth px-4"
+              className="flex overflow-x-auto gap-4 pb-4 px-4"
               style={{
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
                 WebkitOverflowScrolling: 'touch',
-                scrollBehavior: 'smooth',
-                scrollPaddingLeft: '1rem',
-                scrollPaddingRight: '1rem',
                 overscrollBehaviorX: 'contain',
+                scrollSnapType: 'x mandatory',
                 transform: 'translateZ(0)', // Force hardware acceleration
                 willChange: 'scroll-position'
               }}
