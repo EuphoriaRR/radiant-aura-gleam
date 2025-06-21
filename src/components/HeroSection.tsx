@@ -16,7 +16,7 @@ const HeroSection = () => {
           {/* Text Content */}
           <div className="text-center lg:text-left animate-fade-in">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-montserrat font-bold text-gray-800 leading-tight mb-4 sm:mb-6">
-              Buka Potensi Penuh <span className="text-primary">Instagram Anda</span> dengan Kekuatan AI
+              Buka Potensi Penuh <span className="text-primary">Instagram Anda!</span>
             </h1>
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-lato text-gray-600 mb-6 sm:mb-8 leading-relaxed">
               Dapatkan analisis dan strategi mendalam untuk melesatkan pertumbuhan akun Anda. 
@@ -53,8 +53,8 @@ const HeroSection = () => {
                       <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                   </div>
-                  <h3 className="text-lg sm:text-xl font-montserrat font-bold text-gray-800 mb-2">AI Analytics</h3>
-                  <p className="text-sm sm:text-base text-gray-600 font-lato">Analisis mendalam dengan teknologi AI terdepan</p>
+                  <h3 className="text-lg sm:text-xl font-montserrat font-bold text-gray-800 mb-2">Expertise</h3>
+                  <p className="text-sm sm:text-base text-gray-600 font-lato">Analisis mendalam dengan Ahli</p>
                 </div>
               </div>
             </div>

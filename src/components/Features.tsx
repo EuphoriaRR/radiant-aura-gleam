@@ -15,8 +15,8 @@ const Features = () => {
     },
     {
       icon: Brain,
-      title: "Didukung AI",
-      description: "Teknologi AI kami memastikan audit yang cepat, akurat, dan komprehensif."
+      title: "Didukung Experts",
+      description: "Experts kami memastikan audit yang cepat, akurat, dan komprehensif."
     },
     {
       icon: FileText,

@@ -15,7 +15,7 @@ const FinalCTA = () => {
   };
 
   return (
-    <section id="contact" className="py-20 bg-gradient-to-br from-primary via-accent to-secondary">
+    <section id="contact" className="py-20 bg-gradient-to-br from-blue-400 via-blue-600 to-blue-800">
       <div className="container mx-auto px-4 text-center">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl md:text-5xl font-montserrat font-bold text-white mb-6">
