@@ -4,12 +4,14 @@ import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 
 const CaseStudies = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [nextPage, setNextPage] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [activeCardIndex, setActiveCardIndex] = useState(0);
   const scrollContainerRef = useRef(null);
+  const autoScrollTimeoutRef = useRef(null);
+  const userInteractionTimeoutRef = useRef(null);
+  const isUserScrollingRef = useRef(false);
   const casesPerPage = 3;
 
   const cases = [
@@ -108,6 +110,18 @@ const CaseStudies = () => {
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
+  // Cleanup timeouts
+  useEffect(() => {
+    return () => {
+      if (autoScrollTimeoutRef.current) {
+        clearTimeout(autoScrollTimeoutRef.current);
+      }
+      if (userInteractionTimeoutRef.current) {
+        clearTimeout(userInteractionTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // Hitung total halaman
   const totalPages = Math.ceil(cases.length / casesPerPage);
 
@@ -121,17 +135,24 @@ const CaseStudies = () => {
   // Dapatkan case untuk halaman saat ini
   const currentCases = isMobile ? cases : getCasesForPage(currentPage);
 
-  // Enhanced smooth scroll function untuk mobile - FASTER
+  // Smooth scroll function untuk mobile - CENTER THE ACTIVE CARD
   const scrollToCard = (index) => {
     if (scrollContainerRef.current && isMobile) {
       const container = scrollContainerRef.current;
       const cards = container.children;
       
       if (cards[index]) {
-        cards[index].scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
+        const containerWidth = container.offsetWidth;
+        const cardWidth = cards[index].offsetWidth;
+        const gap = 16; // gap-4 = 1rem = 16px
+        
+        // Calculate position to center the card
+        const cardOffsetLeft = cards[index].offsetLeft;
+        const scrollPosition = cardOffsetLeft - (containerWidth / 2) + (cardWidth / 2);
+        
+        container.scrollTo({
+          left: Math.max(0, scrollPosition),
+          behavior: 'smooth'
         });
       }
       
@@ -139,7 +160,7 @@ const CaseStudies = () => {
     }
   };
 
-  // Handle mobile scroll to detect active card - FASTER
+  // Handle mobile scroll to detect active card - IMPROVED DETECTION
   const handleMobileScroll = () => {
     if (isMobile && scrollContainerRef.current) {
       const container = scrollContainerRef.current;
@@ -150,6 +171,7 @@ const CaseStudies = () => {
       let closestIndex = 0;
       let closestDistance = Infinity;
       
+      // Find the card that's closest to the center
       for (let i = 0; i < cards.length; i++) {
         const cardRect = cards[i].getBoundingClientRect();
         const cardCenter = cardRect.left + cardRect.width / 2;
@@ -161,132 +183,183 @@ const CaseStudies = () => {
         }
       }
       
+      // Only update if the index actually changed
       if (closestIndex !== activeCardIndex) {
         setActiveCardIndex(closestIndex);
       }
-      
-      setIsAutoPlay(false);
-      setTimeout(() => {
-        setIsAutoPlay(true);
-      }, 6250); // Increased from 5000ms to 6250ms (25% slower)
     }
   };
 
-  // Enhanced page transition function - 25% SLOWER
+  // Handle user scroll start - DEBOUNCED
+  const handleScrollStart = () => {
+    isUserScrollingRef.current = true;
+    setIsAutoPlay(false);
+    
+    // Clear existing timeout
+    if (userInteractionTimeoutRef.current) {
+      clearTimeout(userInteractionTimeoutRef.current);
+    }
+    
+    // Resume auto-scroll after user stops scrolling
+    userInteractionTimeoutRef.current = setTimeout(() => {
+      isUserScrollingRef.current = false;
+      setIsAutoPlay(true);
+    }, 3000);
+  };
+
+  // Handle scroll end - DEBOUNCED
+  const handleScrollEnd = () => {
+    // Debounce scroll end detection
+    if (userInteractionTimeoutRef.current) {
+      clearTimeout(userInteractionTimeoutRef.current);
+    }
+    
+    userInteractionTimeoutRef.current = setTimeout(() => {
+      isUserScrollingRef.current = false;
+      handleMobileScroll(); // Update active card after scroll ends
+    }, 150);
+  };
+
+  // Enhanced page transition function
   const transitionToPage = (pageNumber) => {
     if (isTransitioning || pageNumber === currentPage) return;
     
     setIsTransitioning(true);
     
-    // 25% slower fade out and fade in
     setTimeout(() => {
       setCurrentPage(pageNumber);
       setTimeout(() => {
         setIsTransitioning(false);
-      }, 31); // Increased from 25ms to 31ms (25% slower)
-    }, 188); // Increased from 150ms to 188ms (25% slower)
+      }, 50);
+    }, 200);
   };
 
-  // Fungsi untuk mengubah halaman (desktop)
+  // Navigation functions
   const goToPage = (pageNumber) => {
     transitionToPage(pageNumber);
   };
 
   const goToPrevious = () => {
     if (isMobile) {
-      const newIndex = Math.max(activeCardIndex - 1, 0);
+      const newIndex = activeCardIndex > 0 ? activeCardIndex - 1 : cases.length - 1;
       scrollToCard(newIndex);
     } else {
-      const prevPage = Math.max(currentPage - 1, 1);
+      const prevPage = currentPage > 1 ? currentPage - 1 : totalPages;
       transitionToPage(prevPage);
     }
   };
 
   const goToNext = () => {
     if (isMobile) {
-      const newIndex = Math.min(activeCardIndex + 1, cases.length - 1);
+      const newIndex = activeCardIndex < cases.length - 1 ? activeCardIndex + 1 : 0;
       scrollToCard(newIndex);
     } else {
-      const nextPageNum = Math.min(currentPage + 1, totalPages);
+      const nextPageNum = currentPage < totalPages ? currentPage + 1 : 1;
       transitionToPage(nextPageNum);
     }
   };
 
-  // Enhanced auto-scroll functionality - 25% SLOWER
+  // Auto-scroll functionality
   useEffect(() => {
     if (!isAutoPlay || isTransitioning) return;
 
-    const interval = setInterval(() => {
+    // Clear existing timeout
+    if (autoScrollTimeoutRef.current) {
+      clearTimeout(autoScrollTimeoutRef.current);
+    }
+
+    autoScrollTimeoutRef.current = setTimeout(() => {
       if (isMobile) {
-        const nextIndex = activeCardIndex + 1;
-        if (nextIndex >= cases.length) {
-          scrollToCard(0);
-        } else {
-          scrollToCard(nextIndex);
-        }
+        const nextIndex = activeCardIndex < cases.length - 1 ? activeCardIndex + 1 : 0;
+        isUserScrollingRef.current = false; // Ensure it's not marked as user scrolling
+        scrollToCard(nextIndex);
       } else {
-        const nextPageNum = currentPage >= totalPages ? 1 : currentPage + 1;
+        const nextPageNum = currentPage < totalPages ? currentPage + 1 : 1;
         transitionToPage(nextPageNum);
       }
-    }, 3125); // Increased from 2500ms to 3125ms (25% slower)
+    }, 3000);
 
-    return () => clearInterval(interval);
-  }, [isAutoPlay, totalPages, isMobile, activeCardIndex, cases.length, currentPage, isTransitioning]);
+    return () => {
+      if (autoScrollTimeoutRef.current) {
+        clearTimeout(autoScrollTimeoutRef.current);
+      }
+    };
+  }, [isAutoPlay, activeCardIndex, currentPage, totalPages, isMobile, cases.length, isTransitioning]);
 
-  // Pause auto-scroll saat user berinteraksi - 25% SLOWER
+  // Handle manual navigation
   const handleManualNavigation = (callback) => {
     setIsAutoPlay(false);
+    
+    // Clear existing timeouts
+    if (autoScrollTimeoutRef.current) {
+      clearTimeout(autoScrollTimeoutRef.current);
+    }
+    if (userInteractionTimeoutRef.current) {
+      clearTimeout(userInteractionTimeoutRef.current);
+    }
+    
     callback();
-    setTimeout(() => {
+    
+    // Resume auto-scroll after delay
+    userInteractionTimeoutRef.current = setTimeout(() => {
       setIsAutoPlay(true);
-    }, 6250); // Increased from 5000ms to 6250ms (25% slower)
+    }, 4000);
   };
 
   const toggleAutoPlay = () => {
     setIsAutoPlay(!isAutoPlay);
+    
+    if (userInteractionTimeoutRef.current) {
+      clearTimeout(userInteractionTimeoutRef.current);
+    }
   };
 
   // Reset active card index when switching to mobile
   useEffect(() => {
     if (isMobile) {
       setActiveCardIndex(0);
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollLeft = 0;
+      }
     }
   }, [isMobile]);
 
   const CaseCard = ({ caseStudy, index }) => (
-    <Card className={`bg-white hover:shadow-xl transition-all duration-250 ease-out border-0 shadow-lg ${
-      isMobile ? 'min-w-[300px] snap-center transform hover:scale-105' : 'transform hover:scale-105'
-    }`}>
+    <Card className={`bg-white hover:shadow-xl transition-all duration-300 ease-out border-0 shadow-lg ${
+      isMobile 
+        ? 'flex-shrink-0 w-[280px] sm:w-[320px] snap-center transform' 
+        : 'transform hover:scale-105'
+    } ${isMobile && index === activeCardIndex ? 'scale-105 ring-4 ring-blue-200' : ''}`}>
       <CardHeader className="text-center pb-4">
-        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center transform transition-transform duration-250 hover:rotate-12">
+        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center transform transition-transform duration-300 hover:rotate-12">
           <span className="text-white font-bold text-xl">{caseStudy.clientName.charAt(0)}</span>
         </div>
-        <h3 className="text-xl font-montserrat font-bold text-gray-800">{caseStudy.clientName}</h3>
-        <p className="text-sm font-lato text-gray-500">{caseStudy.clientType}</p>
+        <h3 className="text-xl font-bold text-gray-800">{caseStudy.clientName}</h3>
+        <p className="text-sm text-gray-500">{caseStudy.clientType}</p>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4">
-          <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg transition-all duration-250 hover:bg-red-100">
-            <span className="font-lato font-medium text-gray-700">Engagement Rate:</span>
-            <span className="font-montserrat font-bold text-red-600">{caseStudy.beforeEngagement}</span>
+          <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg transition-all duration-300 hover:bg-red-100">
+            <span className="font-medium text-gray-700 text-sm">Engagement Rate:</span>
+            <span className="font-bold text-red-600">{caseStudy.beforeEngagement}</span>
           </div>
-          <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg transition-all duration-250 hover:bg-green-100">
-            <span className="font-lato font-medium text-gray-700">Setelah:</span>
-            <span className="font-montserrat font-bold text-green-600">{caseStudy.afterEngagement}</span>
+          <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg transition-all duration-300 hover:bg-green-100">
+            <span className="font-medium text-gray-700 text-sm">Setelah:</span>
+            <span className="font-bold text-green-600">{caseStudy.afterEngagement}</span>
           </div>
           
-          <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg transition-all duration-250 hover:bg-red-100">
-            <span className="font-lato font-medium text-gray-700">Pertumbuhan:</span>
-            <span className="font-montserrat font-bold text-red-600">{caseStudy.beforeFollowers}</span>
+          <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg transition-all duration-300 hover:bg-red-100">
+            <span className="font-medium text-gray-700 text-sm">Pertumbuhan:</span>
+            <span className="font-bold text-red-600">{caseStudy.beforeFollowers}</span>
           </div>
-          <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg transition-all duration-250 hover:bg-green-100">
-            <span className="font-lato font-medium text-gray-700">Setelah:</span>
-            <span className="font-montserrat font-bold text-green-600">{caseStudy.afterFollowers}</span>
+          <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg transition-all duration-300 hover:bg-green-100">
+            <span className="font-medium text-gray-700 text-sm">Setelah:</span>
+            <span className="font-bold text-green-600">{caseStudy.afterFollowers}</span>
           </div>
         </div>
 
-        <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500 transition-all duration-250 hover:bg-blue-100 hover:border-l-8">
-          <p className="font-lato text-gray-700 italic">
+        <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500 transition-all duration-300 hover:bg-blue-100 hover:border-l-8">
+          <p className="text-gray-700 italic text-sm">
             "{caseStudy.testimonial}"
           </p>
         </div>
@@ -298,10 +371,10 @@ const CaseStudies = () => {
     <section id="case-studies" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-montserrat font-bold text-gray-800 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
             Lihat Transformasi Klien Kami
           </h2>
-          <p className="text-xl font-lato text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Hasil nyata dari klien yang telah mempercayai layanan Node Satu untuk mengembangkan Instagram mereka
           </p>
         </div>
@@ -311,11 +384,17 @@ const CaseStudies = () => {
           <div className="relative">
             <div 
               ref={scrollContainerRef}
-              onScroll={handleMobileScroll}
-              className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide scroll-smooth"
+              onScroll={handleScrollEnd}
+              onTouchStart={handleScrollStart}
+              onTouchMove={() => {
+                isUserScrollingRef.current = true;
+                setIsAutoPlay(false);
+              }}
+              className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide scroll-smooth px-4"
               style={{
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch',
                 scrollBehavior: 'smooth',
                 scrollPaddingLeft: '1rem',
                 scrollPaddingRight: '1rem'
@@ -324,8 +403,8 @@ const CaseStudies = () => {
               {cases.map((caseStudy, index) => (
                 <div
                   key={index}
-                  className={`transition-all duration-250 ease-out ${
-                    index === activeCardIndex ? 'scale-100 opacity-100' : 'scale-95 opacity-75'
+                  className={`transition-all duration-300 ease-out ${
+                    index === activeCardIndex ? 'opacity-100' : 'opacity-80'
                   }`}
                 >
                   <CaseCard caseStudy={caseStudy} index={index} />
@@ -333,73 +412,74 @@ const CaseStudies = () => {
               ))}
             </div>
             
-            {/* Mobile Navigation */}
-            <div className="flex justify-center items-center space-x-4 mt-8">
-              <button
-                onClick={toggleAutoPlay}
-                className={`flex items-center px-3 py-2 rounded-lg font-lato font-medium transition-all duration-250 transform hover:scale-105 ${
-                  isAutoPlay
-                    ? 'bg-blue-500 text-white shadow-lg'
-                    : 'bg-white text-gray-700 hover:bg-gray-100 shadow-md'
-                }`}
-              >
-                {isAutoPlay ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-              </button>
-              
-              <button
-                onClick={() => handleManualNavigation(goToPrevious)}
-                disabled={activeCardIndex === 0}
-                className={`flex items-center px-4 py-2 rounded-lg font-lato font-medium transition-all duration-250 transform hover:scale-105 ${
-                  activeCardIndex === 0
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 hover:bg-blue-500 hover:text-white shadow-md'
-                }`}
-              >
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Previous
-              </button>
-              
-              <button
-                onClick={() => handleManualNavigation(goToNext)}
-                disabled={activeCardIndex === cases.length - 1}
-                className={`flex items-center px-4 py-2 rounded-lg font-lato font-medium transition-all duration-250 transform hover:scale-105 ${
-                  activeCardIndex === cases.length - 1
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-white text-gray-700 hover:bg-blue-500 hover:text-white shadow-md'
-                }`}
-              >
-                Next
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </button>
-            </div>
-            
-            {/* Mobile scroll indicator */}
-            <div className="flex justify-center mt-4 space-x-2">
-              {cases.map((_, index) => (
+            {/* Mobile Navigation - IMPROVED LAYOUT */}
+            <div className="flex flex-col items-center space-y-4 mt-8">
+              {/* Play/Pause and Navigation Buttons */}
+              <div className="flex justify-center items-center space-x-3">
                 <button
-                  key={index}
-                  onClick={() => handleManualNavigation(() => scrollToCard(index))}
-                  className={`w-3 h-3 rounded-full transition-all duration-250 transform ${
-                    index === activeCardIndex
-                      ? 'bg-blue-500 scale-125 shadow-lg'
-                      : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
+                  onClick={toggleAutoPlay}
+                  className={`flex items-center justify-center w-10 h-10 rounded-full font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 ${
+                    isAutoPlay
+                      ? 'bg-blue-500 text-white shadow-lg'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 shadow-md border'
                   }`}
-                />
-              ))}
+                >
+                  {isAutoPlay ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                </button>
+                
+                <button
+                  onClick={() => handleManualNavigation(goToPrevious)}
+                  className="flex items-center px-4 py-2 rounded-full font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 bg-white text-gray-700 hover:bg-blue-500 hover:text-white shadow-md border"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  <span className="text-sm">Prev</span>
+                </button>
+                
+                <div className="px-3 py-2 bg-blue-50 rounded-full">
+                  <span className="text-sm font-semibold text-blue-600">
+                    {activeCardIndex + 1} / {cases.length}
+                  </span>
+                </div>
+                
+                <button
+                  onClick={() => handleManualNavigation(goToNext)}
+                  className="flex items-center px-4 py-2 rounded-full font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 bg-white text-gray-700 hover:bg-blue-500 hover:text-white shadow-md border"
+                >
+                  <span className="text-sm">Next</span>
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </button>
+              </div>
+              
+              {/* Mobile Dot Indicators - SCROLLABLE FOR MANY ITEMS */}
+              <div className="flex justify-center overflow-x-auto max-w-full px-4">
+                <div className="flex space-x-2 py-2">
+                  {cases.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleManualNavigation(() => scrollToCard(index))}
+                      className={`flex-shrink-0 w-3 h-3 rounded-full transition-all duration-300 transform ${
+                        index === activeCardIndex
+                          ? 'bg-blue-500 scale-125 shadow-lg'
+                          : 'bg-gray-300 hover:bg-gray-400 hover:scale-110 active:scale-95'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         ) : (
-          /* Desktop: Grid + Smooth Transitions - FASTER */
+          /* Desktop: Grid + Smooth Transitions */
           <>
-            <div className={`grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 transition-all duration-250 ease-in-out ${
+            <div className={`grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 transition-all duration-300 ease-in-out ${
               isTransitioning ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
             }`}>
               {currentCases.map((caseStudy, index) => (
                 <div
                   key={`${currentPage}-${index}`}
-                  className="transform transition-all duration-250 ease-out"
+                  className="transform transition-all duration-300 ease-out"
                   style={{
-                    transitionDelay: `${index * 19}ms` // Increased from 15ms to 19ms (25% slower)
+                    transitionDelay: `${index * 100}ms`
                   }}
                 >
                   <CaseCard caseStudy={caseStudy} index={index} />
@@ -411,7 +491,7 @@ const CaseStudies = () => {
             <div className="flex justify-center items-center space-x-4">
               <button
                 onClick={toggleAutoPlay}
-                className={`flex items-center px-3 py-2 rounded-lg font-lato font-medium transition-all duration-250 transform hover:scale-105 ${
+                className={`flex items-center px-3 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${
                   isAutoPlay
                     ? 'bg-blue-500 text-white shadow-lg'
                     : 'bg-white text-gray-700 hover:bg-gray-100 shadow-md'
@@ -423,9 +503,9 @@ const CaseStudies = () => {
 
               <button
                 onClick={() => handleManualNavigation(goToPrevious)}
-                disabled={currentPage === 1 || isTransitioning}
-                className={`flex items-center px-4 py-2 rounded-lg font-lato font-medium transition-all duration-250 transform hover:scale-105 ${
-                  currentPage === 1 || isTransitioning
+                disabled={isTransitioning}
+                className={`flex items-center px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${
+                  isTransitioning
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'bg-white text-gray-700 hover:bg-blue-500 hover:text-white shadow-md'
                 }`}
@@ -440,7 +520,7 @@ const CaseStudies = () => {
                     key={pageNumber}
                     onClick={() => handleManualNavigation(() => goToPage(pageNumber))}
                     disabled={isTransitioning}
-                    className={`w-10 h-10 rounded-lg font-montserrat font-medium transition-all duration-250 transform hover:scale-110 ${
+                    className={`w-10 h-10 rounded-lg font-medium transition-all duration-300 transform hover:scale-110 ${
                       currentPage === pageNumber
                         ? 'bg-blue-500 text-white shadow-lg scale-110'
                         : isTransitioning
@@ -455,9 +535,9 @@ const CaseStudies = () => {
 
               <button
                 onClick={() => handleManualNavigation(goToNext)}
-                disabled={currentPage === totalPages || isTransitioning}
-                className={`flex items-center px-4 py-2 rounded-lg font-lato font-medium transition-all duration-250 transform hover:scale-105 ${
-                  currentPage === totalPages || isTransitioning
+                disabled={isTransitioning}
+                className={`flex items-center px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${
+                  isTransitioning
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'bg-white text-gray-700 hover:bg-blue-500 hover:text-white shadow-md'
                 }`}
@@ -471,14 +551,14 @@ const CaseStudies = () => {
 
         {/* Page Info */}
         <div className="text-center mt-6">
-          <p className="text-sm font-lato text-gray-600">
+          <p className="text-sm text-gray-600">
             {isMobile ? (
               <>Swipe left/right to explore all {cases.length} case studies</>
             ) : (
               <>Showing page {currentPage} of {totalPages} ({cases.length} total case studies)</>
             )}
             {isAutoPlay && (
-              <span className="ml-2 text-blue-500 animate-pulse">• Auto-scrolling every 3.1 seconds</span>
+              <span className="ml-2 text-blue-500 animate-pulse">• Auto-scrolling every 3 seconds</span>
             )}
           </p>
         </div>
