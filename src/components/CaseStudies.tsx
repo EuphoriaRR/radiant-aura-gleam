@@ -12,6 +12,7 @@ const CaseStudies = () => {
   const autoScrollTimeoutRef = useRef(null);
   const userInteractionTimeoutRef = useRef(null);
   const isUserScrollingRef = useRef(false);
+  const scrollTimeoutRef = useRef(null);
   const casesPerPage = 3;
 
   const cases = [
@@ -119,6 +120,9 @@ const CaseStudies = () => {
       if (userInteractionTimeoutRef.current) {
         clearTimeout(userInteractionTimeoutRef.current);
       }
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -135,7 +139,7 @@ const CaseStudies = () => {
   // Dapatkan case untuk halaman saat ini
   const currentCases = isMobile ? cases : getCasesForPage(currentPage);
 
-  // Smooth scroll function untuk mobile - CENTER THE ACTIVE CARD
+  // FIXED: Improved scroll to card function
   const scrollToCard = (index) => {
     if (scrollContainerRef.current && isMobile) {
       const container = scrollContainerRef.current;
@@ -144,14 +148,19 @@ const CaseStudies = () => {
       if (cards[index]) {
         const containerWidth = container.offsetWidth;
         const cardWidth = cards[index].offsetWidth;
-        const gap = 16; // gap-4 = 1rem = 16px
+        const gap = 16; // gap between cards
         
-        // Calculate position to center the card
+        // Calculate scroll position to center the card
         const cardOffsetLeft = cards[index].offsetLeft;
         const scrollPosition = cardOffsetLeft - (containerWidth / 2) + (cardWidth / 2);
         
+        // Ensure we don't scroll past boundaries
+        const maxScroll = container.scrollWidth - containerWidth;
+        const finalScrollPosition = Math.max(0, Math.min(scrollPosition, maxScroll));
+        
+        // Smooth scroll to position
         container.scrollTo({
-          left: Math.max(0, scrollPosition),
+          left: finalScrollPosition,
           behavior: 'smooth'
         });
       }
@@ -160,10 +169,20 @@ const CaseStudies = () => {
     }
   };
 
-  // Handle mobile scroll to detect active card - IMPROVED DETECTION
+  // FIXED: Improved mobile scroll detection with debouncing
   const handleMobileScroll = () => {
-    if (isMobile && scrollContainerRef.current) {
+    if (!isMobile || !scrollContainerRef.current || isUserScrollingRef.current) return;
+    
+    // Clear previous timeout
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    
+    // Debounce the scroll detection
+    scrollTimeoutRef.current = setTimeout(() => {
       const container = scrollContainerRef.current;
+      if (!container) return;
+      
       const cards = container.children;
       const containerRect = container.getBoundingClientRect();
       const containerCenter = containerRect.left + containerRect.width / 2;
@@ -171,7 +190,7 @@ const CaseStudies = () => {
       let closestIndex = 0;
       let closestDistance = Infinity;
       
-      // Find the card that's closest to the center
+      // Find the card closest to center
       for (let i = 0; i < cards.length; i++) {
         const cardRect = cards[i].getBoundingClientRect();
         const cardCenter = cardRect.left + cardRect.width / 2;
@@ -183,14 +202,14 @@ const CaseStudies = () => {
         }
       }
       
-      // Only update if the index actually changed
+      // Update active card index if different
       if (closestIndex !== activeCardIndex) {
         setActiveCardIndex(closestIndex);
       }
-    }
+    }, 100);
   };
 
-  // Handle user scroll start - DEBOUNCED
+  // FIXED: Handle user scroll start
   const handleScrollStart = () => {
     isUserScrollingRef.current = true;
     setIsAutoPlay(false);
@@ -199,24 +218,24 @@ const CaseStudies = () => {
     if (userInteractionTimeoutRef.current) {
       clearTimeout(userInteractionTimeoutRef.current);
     }
-    
-    // Resume auto-scroll after user stops scrolling
-    userInteractionTimeoutRef.current = setTimeout(() => {
-      isUserScrollingRef.current = false;
-      setIsAutoPlay(true);
-    }, 3000);
   };
 
-  // Handle scroll end - DEBOUNCED
+  // FIXED: Handle scroll end with proper detection
   const handleScrollEnd = () => {
-    // Debounce scroll end detection
+    // Clear existing timeout
     if (userInteractionTimeoutRef.current) {
       clearTimeout(userInteractionTimeoutRef.current);
     }
     
+    // Set timeout to detect when user stops scrolling
     userInteractionTimeoutRef.current = setTimeout(() => {
       isUserScrollingRef.current = false;
-      handleMobileScroll(); // Update active card after scroll ends
+      handleMobileScroll(); // Update active card
+      
+      // Resume auto-scroll after user interaction
+      setTimeout(() => {
+        setIsAutoPlay(true);
+      }, 1000);
     }, 150);
   };
 
@@ -259,9 +278,9 @@ const CaseStudies = () => {
     }
   };
 
-  // Auto-scroll functionality
+  // FIXED: Auto-scroll functionality with proper mobile handling
   useEffect(() => {
-    if (!isAutoPlay || isTransitioning) return;
+    if (!isAutoPlay || isTransitioning || isUserScrollingRef.current) return;
 
     // Clear existing timeout
     if (autoScrollTimeoutRef.current) {
@@ -269,9 +288,11 @@ const CaseStudies = () => {
     }
 
     autoScrollTimeoutRef.current = setTimeout(() => {
+      // Double check user isn't scrolling
+      if (isUserScrollingRef.current) return;
+      
       if (isMobile) {
         const nextIndex = activeCardIndex < cases.length - 1 ? activeCardIndex + 1 : 0;
-        isUserScrollingRef.current = false; // Ensure it's not marked as user scrolling
         scrollToCard(nextIndex);
       } else {
         const nextPageNum = currentPage < totalPages ? currentPage + 1 : 1;
@@ -289,6 +310,7 @@ const CaseStudies = () => {
   // Handle manual navigation
   const handleManualNavigation = (callback) => {
     setIsAutoPlay(false);
+    isUserScrollingRef.current = true;
     
     // Clear existing timeouts
     if (autoScrollTimeoutRef.current) {
@@ -302,6 +324,7 @@ const CaseStudies = () => {
     
     // Resume auto-scroll after delay
     userInteractionTimeoutRef.current = setTimeout(() => {
+      isUserScrollingRef.current = false;
       setIsAutoPlay(true);
     }, 4000);
   };
@@ -318,9 +341,10 @@ const CaseStudies = () => {
   useEffect(() => {
     if (isMobile) {
       setActiveCardIndex(0);
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollLeft = 0;
-      }
+      // Scroll to first card immediately
+      setTimeout(() => {
+        scrollToCard(0);
+      }, 100);
     }
   }, [isMobile]);
 
@@ -384,12 +408,10 @@ const CaseStudies = () => {
           <div className="relative">
             <div 
               ref={scrollContainerRef}
-              onScroll={handleScrollEnd}
+              onScroll={handleMobileScroll}
               onTouchStart={handleScrollStart}
-              onTouchMove={() => {
-                isUserScrollingRef.current = true;
-                setIsAutoPlay(false);
-              }}
+              onTouchEnd={handleScrollEnd}
+              onTouchMove={handleScrollStart}
               className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory scrollbar-hide scroll-smooth px-4"
               style={{
                 scrollbarWidth: 'none',
@@ -412,7 +434,7 @@ const CaseStudies = () => {
               ))}
             </div>
             
-            {/* Mobile Navigation - IMPROVED LAYOUT */}
+            {/* Mobile Navigation */}
             <div className="flex flex-col items-center space-y-4 mt-8">
               {/* Play/Pause and Navigation Buttons */}
               <div className="flex justify-center items-center space-x-3">
@@ -450,7 +472,7 @@ const CaseStudies = () => {
                 </button>
               </div>
               
-              {/* Mobile Dot Indicators - SCROLLABLE FOR MANY ITEMS */}
+              {/* Mobile Dot Indicators */}
               <div className="flex justify-center overflow-x-auto max-w-full px-4">
                 <div className="flex space-x-2 py-2">
                   {cases.map((_, index) => (
