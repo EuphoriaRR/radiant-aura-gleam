@@ -8,13 +8,16 @@ const CaseStudies = () => {
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [activeCardIndex, setActiveCardIndex] = useState(0);
+  const [isInViewport, setIsInViewport] = useState(false); // New state to track visibility
   
   // Refs for managing scroll behavior and timeouts
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null); // New ref for the section
   const autoScrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const userInteractionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isUserScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   
   const casesPerPage = 3;
 
@@ -101,6 +104,31 @@ const CaseStudies = () => {
       clientType: "E-commerce"
     }
   ];
+
+  // Intersection Observer to detect if section is in viewport
+  useEffect(() => {
+    if (sectionRef.current) {
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          const [entry] = entries;
+          // Set visibility threshold - section is considered visible if at least 30% is showing
+          setIsInViewport(entry.isIntersecting && entry.intersectionRatio >= 0.3);
+        },
+        {
+          threshold: [0, 0.3, 0.5, 0.7, 1.0], // Multiple thresholds for better detection
+          rootMargin: '-10% 0px -10% 0px' // Add some margin to prevent edge cases
+        }
+      );
+
+      observerRef.current.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, []);
 
   // Detect mobile screen size
   useEffect(() => {
@@ -327,9 +355,10 @@ const CaseStudies = () => {
     }
   };
 
-  // IMPROVED: Auto-scroll functionality with better mobile handling
+  // FIXED: Auto-scroll functionality that only works when section is visible
   useEffect(() => {
-    if (!isAutoPlay || isTransitioning) return;
+    // Only run auto-scroll if the section is visible and auto-play is enabled
+    if (!isAutoPlay || isTransitioning || !isInViewport) return;
 
     // Clear existing timeout
     if (autoScrollTimeoutRef.current) {
@@ -337,8 +366,8 @@ const CaseStudies = () => {
     }
 
     autoScrollTimeoutRef.current = setTimeout(() => {
-      // Skip if user is currently interacting
-      if (isUserScrollingRef.current) return;
+      // Skip if user is currently interacting or section is not visible
+      if (isUserScrollingRef.current || !isInViewport) return;
       
       if (isMobile) {
         const nextIndex = activeCardIndex < cases.length - 1 ? activeCardIndex + 1 : 0;
@@ -357,7 +386,7 @@ const CaseStudies = () => {
         clearTimeout(autoScrollTimeoutRef.current);
       }
     };
-  }, [isAutoPlay, activeCardIndex, currentPage, totalPages, isMobile, cases.length, isTransitioning]);
+  }, [isAutoPlay, activeCardIndex, currentPage, totalPages, isMobile, cases.length, isTransitioning, isInViewport]);
 
   // Handle manual navigation with proper auto-scroll management
   const handleManualNavigation = (callback: () => void) => {
@@ -457,7 +486,7 @@ const CaseStudies = () => {
   );
 
   return (
-    <section id="case-studies" className="py-20 bg-gray-50">
+    <section ref={sectionRef} id="case-studies" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
@@ -645,8 +674,11 @@ const CaseStudies = () => {
             ) : (
               <>Showing page {currentPage} of {totalPages} ({cases.length} total case studies)</>
             )}
-            {isAutoPlay && (
+            {isAutoPlay && isInViewport && (
               <span className="ml-2 text-blue-500 animate-pulse">• Auto-scrolling every 3 seconds</span>
+            )}
+            {isAutoPlay && !isInViewport && (
+              <span className="ml-2 text-gray-400">• Auto-scroll paused (section not visible)</span>
             )}
           </p>
         </div>
