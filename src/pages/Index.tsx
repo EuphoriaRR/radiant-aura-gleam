@@ -25,8 +25,6 @@ const Index = () => {
       
       <FinalCTA />
       <Footer />
-      
-      <Chatbot />
     </div>
   );
 };

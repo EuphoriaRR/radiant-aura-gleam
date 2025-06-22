@@ -6,17 +6,17 @@ const Features = () => {
     {
       icon: Target,
       title: "Analisis Mendalam",
-      description: "Kami menganalisis lebih dari 50 metrik untuk menemukan potensi tersembunyi."
+      description: "Menggunakan 50+ variabel: konten, engagement, urgency, call-to-value (CTV)."
     },
     {
       icon: TrendingUp,
       title: "Strategi Pertumbuhan",
-      description: "Dapatkan rekomendasi actionable untuk meningkatkan engagement dan followers."
+      description: "Setiap output = strategi + SOP konkret yang bisa langsung dijalankan staf Anda."
     },
     {
       icon: Brain,
       title: "Didukung Experts",
-      description: "Experts kami memastikan audit yang cepat, akurat, dan komprehensif."
+      description: "Hasil AI kami diverifikasi oleh tim analis dengan pengalaman >300 audit."
     },
     {
       icon: FileText,
@@ -33,7 +33,7 @@ const Features = () => {
             Bagaimana Kami Membantu Anda
           </h2>
           <p className="text-xl font-lato text-gray-600 max-w-2xl mx-auto">
-            Dengan teknologi AI terdepan, kami memberikan solusi komprehensif untuk mengoptimalkan performa Instagram Anda
+            Dengan tenaga para ahli, kami memberikan solusi komprehensif untuk mengoptimalkan performa Instagram Anda
           </p>
         </div>
 

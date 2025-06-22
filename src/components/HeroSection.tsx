@@ -19,7 +19,7 @@ const HeroSection = () => {
             </h1>
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-lato text-gray-600 mb-6 sm:mb-8 leading-relaxed">
               Dapatkan analisis dan strategi mendalam untuk melesatkan pertumbuhan akun Anda. 
-              <span className="text-secondary font-semibold"> </span>
+              <span className="text-secondary font-semibold"> Akurat dan Cepat!</span>
             </p>
             <div className="flex flex-col gap-3 sm:gap-4 justify-center lg:justify-start">
               <Button 
@@ -52,8 +52,8 @@ const HeroSection = () => {
                       <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                   </div>
-                  <h3 className="text-lg sm:text-xl font-montserrat font-bold text-gray-800 mb-2">Expertise</h3>
-                  <p className="text-sm sm:text-base text-gray-600 font-lato">Analisis mendalam dengan Ahli</p>
+                  <h3 className="text-lg sm:text-xl font-montserrat font-bold text-gray-800 mb-2">Special</h3>
+                  <p className="text-sm sm:text-base text-gray-600 font-lato">Audit & Strategi AI eksklusif untuk 10 UMKM/batch — gratis, aman, langsung jalan. <br></br>Batch penuh dalam: <span className="text-secondary">[terisi 7/10]</span></p>
                 </div>
               </div>
             </div>

@@ -18,38 +18,22 @@ const UMKMSection = () => {
                   <li className="flex items-start">
                     <div className="w-2 h-2 rounded-full bg-primary mt-2 mr-3 flex-shrink-0"></div>
                     <p className="text-sm sm:text-base font-lato text-gray-600">
-                      <span className="font-semibold text-primary">50 juta</span> dari 65 juta UMKM di Indonesia belum masuk ekosistem digital
+                      NodeSatu berdedikasi membantu meningkatkan harga diri 10 juta+ UMKM Indonesia — agar setiap usaha kecil merasa layak dipercaya, dipilih, dan diperjuangkan.
                     </p>
                   </li>
                   <li className="flex items-start">
-                    <div className="w-2 h-2 rounded-full bg-secondary mt-2 mr-3 flex-shrink-0"></div>
+                    <div className="w-2 h-2 rounded-full bg-primary mt-2 mr-3 flex-shrink-0"></div>
                     <p className="text-sm sm:text-base font-lato text-gray-600">
-                      <span className="font-semibold text-secondary">Jutaan</span> UMKM yang belum mengetahui potensi produk mereka
+                      Kami hadir bukan untuk sekadar membantu usaha tumbuh, tetapi kami hadir untuk membantu keluarga merasa layak untuk bermimpi lagi.
                     </p>
                   </li>
                   <li className="flex items-start">
-                    <div className="w-2 h-2 rounded-full bg-accent mt-2 mr-3 flex-shrink-0"></div>
+                    <div className="w-2 h-2 rounded-full bg-primary mt-2 mr-3 flex-shrink-0"></div>
                     <p className="text-sm sm:text-base font-lato text-gray-600">
-                      <span className="font-semibold text-accent">Banyak</span> yang tidak tahu cara masuk ke ekosistem digital
+                      Karena setiap usaha kecil adalah tulang punggung dan harapan yang sedang dicicil diam-diam oleh satu keluarga.
                     </p>
                   </li>
                 </ul>
-              </div>
-
-              {/* Main Content */}
-              <div className="space-y-4">
-                <p className="text-base sm:text-lg font-lato text-gray-700 leading-relaxed">
-                  Kami hadir karena melihat jutaan potensi UMKM Indonesia yang luar biasa masih tersimpan di luar dunia digital. 
-                  <span className="text-primary font-semibold"> Misi kami sederhana: menjadi teman seperjalanan bagi para pelaku UMKM untuk go digital.</span>
-                </p>
-                
-                <p className="text-base sm:text-lg font-lato text-gray-700 leading-relaxed">
-                  Kami tidak hanya membuka akses, tetapi juga membantu Anda menemukan "kekuatan" produk Anda dan memberikan panduan langkah demi langkah yang praktis.
-                </p>
-                
-                <p className="text-base sm:text-lg font-lato text-gray-700 leading-relaxed">
-                  <span className="text-secondary font-semibold">Visi kami adalah melihat setiap UMKM di Indonesia naik kelas, berkembang, dan bangga dengan produknya di panggung digital.</span>
-                </p>
               </div>
             </div>
 

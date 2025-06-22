@@ -23,7 +23,7 @@ const Header = () => {
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg sm:text-xl">A</span>
             </div>
-            <span className="text-xl sm:text-2xl font-montserrat font-bold text-gray-800">Node Satu</span>
+            <span className="text-xl sm:text-2xl font-montserrat font-bold text-gray-800">NodeSatu</span>
           </div>
 
           {/* Desktop Navigation */}
@@ -56,7 +56,7 @@ const Header = () => {
               onClick={() => scrollToSection('pricing')}
               className="bg-primary hover:bg-primary/90 font-lato font-semibold px-4 lg:px-6 text-sm lg:text-base"
             >
-              Dapatkan Audit Gratis
+              Dapatkan Audit Sekarang
             </Button>
           </nav>
 
@@ -101,7 +101,7 @@ const Header = () => {
                 onClick={() => scrollToSection('pricing')}
                 className="bg-primary hover:bg-primary/90 font-lato font-semibold w-fit text-sm"
               >
-                Dapatkan Audit Gratis
+                Dapatkan Audit Sekarang
               </Button>
             </nav>
           </div>
