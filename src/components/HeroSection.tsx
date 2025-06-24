@@ -1,6 +1,38 @@
 import { Button } from '@/components/ui/button';
+import React, { useEffect, useState } from "react";
 
 const HeroSection = () => {
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  useEffect(() => {
+    // Target ke 24 Juni 2025 pukul 23:59:59 WIB
+    const targetDate = new Date("2025-06-24T23:59:59+07:00").getTime();
+
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance <= 0) {
+        clearInterval(interval);
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      } else {
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        setTimeLeft({ days, hours, minutes, seconds });
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
@@ -27,7 +59,7 @@ const HeroSection = () => {
                 size="lg" 
                 className="bg-primary hover:bg-primary/90 text-white font-lato font-semibold text-sm sm:text-base lg:text-lg px-4 sm:px-6 lg:px-8 py-3 sm:py-4 h-auto w-full sm:w-auto"
               >
-                Klaim Audit Instagram Gratis Saya
+                Klaim Audit Instagram Saya Sekarang
               </Button>
               <Button 
                 onClick={() => scrollToSection('pricing')}
@@ -53,7 +85,8 @@ const HeroSection = () => {
                     </svg>
                   </div>
                   <h3 className="text-lg sm:text-xl font-montserrat font-bold text-gray-800 mb-2">Special</h3>
-                  <p className="text-sm sm:text-base text-gray-600 font-lato">Audit & Strategi AI eksklusif untuk 10 UMKM/batch — gratis, aman, langsung jalan. <br></br>Batch penuh dalam: <span className="text-secondary">[terisi 7/10]</span></p>
+                  <p className="text-sm sm:text-base text-gray-600 font-lato">Audit eksklusif untuk 10 UMKM/batch — gratis, aman, langsung jalan. <br></br>Batch penuh dalam: <span className="text-secondary">[terisi 7/10]</span></p>
+                  <p className="text-sm sm:text-base text-gray-700 font-semibold font-lato mt-2">⏳ Sisa waktu: {timeLeft.days}h {timeLeft.hours}j {timeLeft.minutes}m {timeLeft.seconds}d</p>
                 </div>
               </div>
             </div>

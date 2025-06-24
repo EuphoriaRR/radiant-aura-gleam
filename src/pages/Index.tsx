@@ -17,12 +17,13 @@ const Index = () => {
       {/* Main content container */}
       <main className="w-full flex-1 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <HeroSection />
-        <UMKMSection />
         <Features />
+      </main>
+        <UMKMSection />
+      <main className="w-full flex-1 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <CaseStudies />
         <Pricing />
       </main>
-      
       <FinalCTA />
       <Footer />
     </div>

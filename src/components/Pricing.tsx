@@ -2,9 +2,43 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check } from 'lucide-react';
+import { Check, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 const Pricing = () => {
+const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
+
+  useEffect(() => {
+    // Set countdown to 3 days from now at midnight (00:00:00)
+    const now = new Date();
+    const endDate = new Date();
+    endDate.setDate(now.getDate() + 3);
+    endDate.setHours(0, 0, 0, 0); // Set to midnight
+    
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = endDate.getTime() - now;
+      
+      if (distance > 0) {
+        setTimeLeft({
+          days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((distance % (1000 * 60)) / 1000)
+        });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const scrollToContact = () => {
     const element = document.getElementById('contact');
     if (element) {
@@ -16,7 +50,7 @@ const Pricing = () => {
     {
       name: "Starter",
       price: "GRATIS",
-      popular: true,
+      popular: false,
       features: [
         "Audit 1 akun",
         "Analisis Profil",  
@@ -28,9 +62,12 @@ const Pricing = () => {
     },
     {
       name: "Growth",
-      price: "Rp 299.000",
+      originalPrice: "Rp 1.395.000",
+      price: "Rp 279.000",
       period: "/bulan",
-      popular: false,
+      discount: "80%",
+      popular: true,
+      isPromo: true,
       features: [
         "Semua fitur Starter",
         "Analisis Hashtag",
@@ -38,19 +75,19 @@ const Pricing = () => {
         "Rekomendasi Konten",
         "Laporan Mingguan"
       ],
-      buttonText: "Pilih Paket Growth",
+      buttonText: "Ambil Promo Sekarang!",
       buttonAction: scrollToContact
     },
     {
-      name: "Pro / Custom AI",
+      name: "Pro / Custom",
       price: "Hubungi Kami",
       popular: false,
       features: [
         "Semua fitur Growth",
         "Konsultasi 1-on-1",
-        "AI Services (chatbot, dll)",
+        "AI Services (chatbot Whatsapp, Telegram, dll)",
         "Laporan Bulanan",
-        "Support Priority"
+        "Support 24/7"
       ],
       buttonText: "Jadwalkan Konsultasi",
       buttonAction: scrollToContact
@@ -82,7 +119,42 @@ const Pricing = () => {
                 <CardTitle className="text-2xl font-montserrat font-bold text-gray-800 mb-2">
                   {plan.name}
                 </CardTitle>
+
+              {plan.isPromo && (
+                  <div className="mb-4 p-3 bg-red-50 rounded-lg border border-red-200">
+                    <div className="flex items-center justify-center mb-2">
+                      <Clock className="w-4 h-4 text-red-500 mr-2" />
+                      <span className="text-red-600 font-lato font-semibold text-sm">
+                        Promo Berakhir Dalam:
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 text-center">
+                      <div className="bg-red-500 text-white rounded px-2 py-1">
+                        <div className="text-lg font-bold">{timeLeft.days}</div>
+                        <div className="text-xs">Hari</div>
+                      </div>
+                      <div className="bg-red-500 text-white rounded px-2 py-1">
+                        <div className="text-lg font-bold">{timeLeft.hours}</div>
+                        <div className="text-xs">Jam</div>
+                      </div>
+                      <div className="bg-red-500 text-white rounded px-2 py-1">
+                        <div className="text-lg font-bold">{timeLeft.minutes}</div>
+                        <div className="text-xs">Menit</div>
+                      </div>
+                      <div className="bg-red-500 text-white rounded px-2 py-1">
+                        <div className="text-lg font-bold">{timeLeft.seconds}</div>
+                        <div className="text-xs">Detik</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="mb-4">
+                  {plan.originalPrice && (
+                    <div className="text-lg text-gray-500 line-through font-lato mb-1">
+                      {plan.originalPrice}
+                    </div>
+                  )}
                   <span className="text-4xl font-montserrat font-bold text-primary">
                     {plan.price}
                   </span>
@@ -109,7 +181,7 @@ const Pricing = () => {
                 <Button 
                   onClick={plan.buttonAction}
                   className={`w-full font-lato font-semibold py-3 ${
-                    plan.popular 
+                    plan.popular
                       ? 'bg-primary hover:bg-primary/90 text-white' 
                       : 'bg-white border-2 border-primary text-primary hover:bg-primary hover:text-white'
                   }`}
