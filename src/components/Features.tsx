@@ -1,4 +1,3 @@
-
 import { Target, TrendingUp, Brain, FileText } from 'lucide-react';
 
 const Features = () => {
@@ -16,7 +15,7 @@ const Features = () => {
     {
       icon: Brain,
       title: "Didukung Experts",
-      description: "Hasil AI kami diverifikasi oleh tim analis dengan pengalaman >300 audit."
+      description: "Hasil audit kami diverifikasi oleh tim analis dengan pengalaman >300 audit."
     },
     {
       icon: FileText,
