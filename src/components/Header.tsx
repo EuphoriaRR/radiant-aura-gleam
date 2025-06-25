@@ -1,9 +1,13 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 
 const Header = () => {
+const imageStyle = {
+    width: '25%',
+    height: 'auto',
+  };
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
@@ -19,11 +23,9 @@ const Header = () => {
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg sm:text-xl">A</span>
-            </div>
-            <span className="text-xl sm:text-2xl font-montserrat font-bold text-gray-800">NodeSatu</span>
+          <div className="flex items-center space-x-0">
+            <img src="/logo.png" className="w-8 sm:w-10 h-auto" />
+            <span className="text-xl font-bold tracking-tight text-gray-800">Nodesatu</span>
           </div>
 
           {/* Desktop Navigation */}

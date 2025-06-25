@@ -43,23 +43,23 @@ const HeroSection = () => {
   return (
     <section className="bg-gradient-to-br from-white via-muted/30 to-primary/5 py-6 sm:py-8 lg:py-16">
       <div className="container mx-auto px-3 sm:px-4">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        {/* Ubah dari grid lg:grid-cols-2 menjadi flex justify-center */}
+        <div className="flex justify-center items-center">
           {/* Text Content */}
-          <div className="text-center lg:text-left animate-fade-in">
+          <div className="text-center animate-fade-in max-w-4xl">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-montserrat font-bold text-gray-800 leading-tight mb-4 sm:mb-6">
-              Buat <span className="text-primary">Instagram</span> bekerja untukmu, bukan sebaliknya! 
+              Posting tiap hari, capek, tapi tetap sepi? 
             </h1>
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl font-lato text-gray-600 mb-6 sm:mb-8 leading-relaxed">
-              Dapatkan analisis dan strategi mendalam untuk melesatkan pertumbuhan akun Anda. 
-              <span className="text-secondary font-semibold"> Akurat dan Cepat!</span>
+              Mungkin bukan kamu yang salah—tapi sistem <span className='text-primary'>IG</span>-mu yang <span className="text-secondary font-semibold">bocor</span>. <br></br>Audit ini bantu kamu temukan titik <span className="text-secondary font-semibold">bocor</span> yang tak kamu sadari.
             </p>
-            <div className="flex flex-col gap-3 sm:gap-4 justify-center lg:justify-start">
+            <div className="flex flex-col gap-3 sm:gap-4 justify-center items-center">
               <Button 
                 onClick={() => scrollToSection('pricing')}
                 size="lg" 
                 className="bg-primary hover:bg-primary/90 text-white font-lato font-semibold text-sm sm:text-base lg:text-lg px-4 sm:px-6 lg:px-8 py-3 sm:py-4 h-auto w-full sm:w-auto"
               >
-                Klaim Audit Instagram Saya Sekarang
+                Mulai Audit Sekarang
               </Button>
               <Button 
                 onClick={() => scrollToSection('pricing')}
@@ -73,7 +73,7 @@ const HeroSection = () => {
           </div>
 
           {/* Visual */}
-          <div className="flex justify-center lg:justify-end mt-8 lg:mt-0">
+          {/*<div className="flex justify-center lg:justify-end mt-8 lg:mt-0">
             <div className="relative">
               <div className="w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-gradient-to-br from-primary via-accent to-secondary rounded-3xl opacity-20 absolute -rotate-6"></div>
               <div className="w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-gradient-to-tr from-accent via-primary to-coral rounded-3xl opacity-30 absolute rotate-3"></div>
@@ -90,7 +90,7 @@ const HeroSection = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </div>*/}
         </div>
       </div>
     </section>

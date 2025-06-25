@@ -23,7 +23,7 @@ const FinalCTA = () => {
             Mulai Audit Sekarang & Dapatkan Rekomendasi dari Ahli Instagram!
           </h2>
           <p className="text-xl md:text-2xl font-lato text-white/90 mb-12 leading-relaxed">
-            Hubungi kami melalui Whatsapp dan mari kita diskusikan bagaimana Node Satu bisa membantu.
+            Hubungi kami melalui Whatsapp dan mari kita diskusikan bagaimana Nodesatu bisa membantu.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">

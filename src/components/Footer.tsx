@@ -1,4 +1,3 @@
-
 const Footer = () => {
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -7,20 +6,25 @@ const Footer = () => {
     }
   };
 
+  const imageStyle = {
+    width: '25%',
+    height: 'auto',
+  };
+
   return (
     <footer className="bg-gray-800 text-white py-12">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-3 gap-8 items-center">
           {/* Logo & Copyright */}
           <div className="text-center md:text-left">
-            <div className="flex items-center justify-center md:justify-start space-x-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">A</span>
+            <div className="flex items-center justify-center md:justify-start space-x-0 mb-4">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                <img src="/logo.png" className="invert w-8 sm:w-10 h-auto" />
               </div>
-              <span className="text-2xl font-montserrat font-bold">Node Satu</span>
+              <span className="text-xl font-montserrat font-bold">Nodesatu</span>
             </div>
             <p className="font-lato text-gray-300">
-              © 2025 Node Satu. All Rights Reserved.
+              © 2025 Nodesatu. All Rights Reserved.
             </p>
           </div>
 
