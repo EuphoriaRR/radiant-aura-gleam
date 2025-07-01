@@ -1,9 +1,8 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { X, MessageCircle, Send } from 'lucide-react';
+import { X, MessageCircle, Send, Loader2 } from 'lucide-react';
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,38 +13,80 @@ const Chatbot = () => {
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const predefinedResponses = {
-    'layanan': 'Kami menyediakan layanan audit Instagram gratis, analisis mendalam, strategi pertumbuhan, dan AI services untuk bisnis. Ingin tahu lebih detail tentang layanan mana?',
-    'audit gratis': 'Audit gratis kami meliputi analisis profil, analisis 10 postingan terakhir, dan skor performa Instagram Anda. Cukup klik tombol "Dapatkan Audit Gratis" untuk memulai!',
-    'harga': 'Kami memiliki 3 paket: Starter (GRATIS), Growth (Rp 299.000/bulan), dan Pro/Custom AI (hubungi kami). Paket mana yang ingin Anda ketahui lebih detail?',
-    'growth': 'Paket Growth (Rp 299.000/bulan) mencakup semua fitur Starter plus analisis hashtag, analisis kompetitor, rekomendasi konten, dan laporan mingguan.',
-    'kontak': 'Anda bisa menghubungi kami via WhatsApp, email, atau jadwalkan panggilan. Scroll ke bagian bawah halaman untuk melihat semua opsi kontak!',
-    'cara kerja': 'Prosesnya mudah: 1) Daftar audit gratis, 2) Kami analisis akun Instagram Anda, 3) Terima laporan komprehensif, 4) Implementasikan rekomendasi kami!',
-    'default': 'Maaf, saya belum memahami pertanyaan Anda. Coba tanyakan tentang layanan, harga, audit gratis, atau cara kerja kami. Atau hubungi tim kami langsung untuk bantuan lebih lanjut!'
+  // Store conversation history for context
+  const [conversationHistory, setConversationHistory] = useState([]);
+
+  const callGemini = async (userMessage) => {
+    try {
+      // Build conversation history for Gemini
+      const conversationText = conversationHistory.length > 0 
+        ? conversationHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n') + '\n'
+        : '';
+      
+      const fullPrompt = `Anda adalah asisten virtual untuk Athel AI, sebuah perusahaan yang menyediakan layanan audit Instagram gratis, analisis mendalam, strategi pertumbuhan, dan AI services untuk bisnis. Jawab dalam bahasa Indonesia dengan ramah dan profesional. 
+
+Layanan kami:
+- Starter (GRATIS): Audit dasar Instagram
+- Growth (Rp 299.000/bulan): Analisis hashtag, kompetitor, rekomendasi konten, laporan mingguan
+- Pro/Custom AI: Solusi kustom (hubungi kami)
+
+Selalu tawarkan bantuan lebih lanjut dan arahkan ke layanan yang sesuai.
+
+${conversationText}User: ${userMessage}
+Assistant:`;
+
+      const response = await fetch('/api/gemini-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          prompt: fullPrompt
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const botResponse = data.response;
+      
+      // Update conversation history
+      setConversationHistory(prev => [
+        ...prev,
+        { role: 'user', content: userMessage },
+        { role: 'assistant', content: botResponse }
+      ]);
+      
+      return botResponse;
+    } catch (error) {
+      console.error('Error calling Gemini API:', error);
+      return 'Maaf, saya mengalami kesulitan teknis. Silakan coba lagi dalam beberapa saat atau hubungi tim kami langsung untuk bantuan.';
+    }
   };
 
-  const handleSendMessage = () => {
-    if (inputMessage.trim()) {
-      const newMessages = [...messages, { type: 'user', text: inputMessage }];
-      
-      // Simple keyword matching for responses
-      const lowerInput = inputMessage.toLowerCase();
-      let response = predefinedResponses.default;
-      
-      for (const [keyword, reply] of Object.entries(predefinedResponses)) {
-        if (keyword !== 'default' && lowerInput.includes(keyword)) {
-          response = reply;
-          break;
-        }
-      }
-      
-      setTimeout(() => {
-        setMessages([...newMessages, { type: 'bot', text: response }]);
-      }, 1000);
-      
+  const handleSendMessage = async () => {
+    if (inputMessage.trim() && !isLoading) {
+      const userMessage = inputMessage.trim();
+      const newMessages = [...messages, { type: 'user', text: userMessage }];
       setMessages(newMessages);
       setInputMessage('');
+      setIsLoading(true);
+
+      try {
+        const botResponse = await callGemini(userMessage);
+        setMessages([...newMessages, { type: 'bot', text: botResponse }]);
+      } catch (error) {
+        setMessages([...newMessages, { 
+          type: 'bot', 
+          text: 'Maaf, saya mengalami kesulitan teknis. Silakan coba lagi dalam beberapa saat.' 
+        }]);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -91,6 +132,14 @@ const Chatbot = () => {
                     </div>
                   </div>
                 ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-white text-gray-800 border shadow-sm p-2 sm:p-3 rounded-lg font-lato text-sm flex items-center space-x-2">
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Mengetik...</span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Input */}
@@ -99,16 +148,18 @@ const Chatbot = () => {
                   <Input
                     value={inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                    onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSendMessage()}
                     placeholder="Ketik pesan Anda..."
                     className="font-lato text-sm"
+                    disabled={isLoading}
                   />
                   <Button
                     onClick={handleSendMessage}
                     size="icon"
                     className="bg-primary hover:bg-primary/90 flex-shrink-0"
+                    disabled={isLoading}
                   >
-                    <Send size={14} />
+                    {isLoading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                   </Button>
                 </div>
               </div>

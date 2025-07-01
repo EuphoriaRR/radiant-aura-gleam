@@ -25,6 +25,7 @@ const Index = () => {
         <Pricing />
       </main>
       <FinalCTA />
+      <Chatbot />
       <Footer />
     </div>
   );
