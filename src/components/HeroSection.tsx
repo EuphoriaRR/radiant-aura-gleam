@@ -11,7 +11,7 @@ const HeroSection = () => {
 
   useEffect(() => {
     // Target ke 24 Juni 2025 pukul 23:59:59 WIB
-    const targetDate = new Date("2025-06-24T23:59:59+07:00").getTime();
+    const targetDate = new Date("2025-07-27T23:59:59+07:00").getTime();
 
     const interval = setInterval(() => {
       const now = new Date().getTime();
